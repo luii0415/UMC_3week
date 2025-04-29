@@ -13,7 +13,7 @@ const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const validate = (values: FormValues) => {
   const errors: Partial<Record<keyof FormValues, string>> = {};
 
-  if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(values.email)) {
+  if (!EMAIL_REGEX.test(values.email)) {
     errors.email = "올바른 이메일 형식을 입력해주세요.";
   }
 
@@ -32,11 +32,13 @@ export default function LoginPage() {
       initialValues: { email: "", password: "" },
       validate,
       onSubmit: async (data) => {
-        console.log("로그인 데이터:", data);
+        const validationErrors = validate(data);
+        if (Object.keys(validationErrors).length === 0) {
+          alert("로그인 성공!");
+          console.log("로그인 데이터:", data);
+        }
       },
     });
-
-  const isValid = EMAIL_REGEX.test(values.email) && values.password.length >= 8;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -90,10 +92,9 @@ export default function LoginPage() {
             className="w-full rounded border border-gray-600 bg-transparent px-3 py-2 text-sm placeholder-gray-500 focus:border-lpPink focus:outline-none"
           />
           {errors.email && (
-            <p className="text-xs text-red-500">
-              올바른 이메일 형식을 입력해주세요.
-            </p>
+            <p className="text-xs text-red-500">{errors.email}</p>
           )}
+
           <input
             type="password"
             name="password"
@@ -103,20 +104,13 @@ export default function LoginPage() {
             className="w-full rounded border border-gray-600 bg-transparent px-3 py-2 text-sm placeholder-gray-500 focus:border-lpPink focus:outline-none"
           />
           {errors.password && (
-            <p className="text-xs text-red-500">
-              비밀번호는 8자 이상이어야 합니다.
-            </p>
+            <p className="text-xs text-red-500">{errors.password}</p>
           )}
 
           <button
             type="submit"
-            disabled={!isValid || isSubmitting}
-            className={`w-full rounded py-2 text-sm text-white
-              ${
-                isValid
-                  ? "bg-black hover:brightness-110"
-                  : "bg-gray-300 opacity-50"
-              }`}
+            disabled={isSubmitting}
+            className={`w-full rounded py-2 text-sm text-white bg-black hover:brightness-110`}
           >
             로그인
           </button>
